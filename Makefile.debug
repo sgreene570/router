@@ -1,0 +1,22 @@
+# -*- mode: makefile -*-
+new-openshift-router-image:
+	GO111MODULE=on GOFLAGS=-mod=vendor go build -o openshift-router -gcflags=all="-N -l" ./cmd/openshift-router
+	imagebuilder -t sgreene570/openshift-router:latest -f Dockerfile.debug .
+
+push:
+	docker tag sgreene570/openshift-router:latest quay.io/sgreene570/openshift-router:latest
+	docker push quay.io/sgreene570/openshift-router:latest
+
+set-image:
+	oc scale --replicas 0 -n openshift-cluster-version deployments/cluster-version-operator
+	oc scale --replicas 0 -n openshift-ingress-operator deployments ingress-operator
+	oc -n openshift-ingress scale deployment --replicas=0 router-default
+	oc -n openshift-ingress set image deployment/router-default router=quay.io/sgreene570/openshift-router:latest
+	oc -n openshift-ingress scale deployment --replicas=1 router-default
+	oc patch deployment -n openshift-ingress router-default -p '{"spec":{"template":{"spec":{"$setElementOrder/containers":[{"name":"router"}],"containers":[{"imagePullPolicy":"Always","livenessProbe":null,"name":"router","readinessProbe":null}]}}}}'
+
+dwim:  new-openshift-router-image push set-image
+
+reset:
+	oc scale --replicas 1 -n openshift-cluster-version deployments/cluster-version-operator
+	oc scale --replicas 1 -n openshift-ingress-operator deployments ingress-operator
