@@ -1,7 +1,7 @@
 {{/*
     haproxy-config.cfg: contains the main config with helper backends that are used to terminate
-    					encryption before finally sending to a host_be which is the backend that is the final
-    					backend for a route and contains all the endpoints for the service
+                        encryption before finally sending to a host_be which is the backend that is the final
+                        backend for a route and contains all the endpoints for the service
 */}}
 {{- define "conf/haproxy.config" }}
 {{- $workingDir := .WorkingDir }}
@@ -464,7 +464,7 @@ backend {{genBackendNamePrefix $cfg.TLSTermination}}:{{$cfgIdx}}
       {{- if validateHAProxyWhiteList $ip_whiteList }}
   acl whitelist src {{$ip_whiteList}}
       {{- else }}
-	{{- with $whiteListFileName := generateHAProxyWhiteListFile $workingDir $cfgIdx $ip_whiteList}}
+    {{- with $whiteListFileName := generateHAProxyWhiteListFile $workingDir $cfgIdx $ip_whiteList}}
   acl whitelist src -f {{$whiteListFileName}}
         {{- end }}
       {{- end }}
@@ -550,7 +550,7 @@ backend {{genBackendNamePrefix $cfg.TLSTermination}}:{{$cfgIdx}}
   http-request replace-path ^{{ $cfg.Path }}(.*)$ {{ $pathRewriteTarget }}\1
     {{- end }}
   {{- end }}{{/* rewrite target */}}
-  
+
   {{- if not (isTrue (index $cfg.Annotations "haproxy.router.openshift.io/disable_cookies")) }}
   cookie {{firstMatch $cookieNamePattern (index $cfg.Annotations "router.openshift.io/cookie_name") (env "ROUTER_COOKIE_NAME" "") $cfg.RoutingKeyName}} insert indirect nocache httponly
     {{- if and (matchValues (print $cfg.TLSTermination) "edge" "reencrypt") (ne $cfg.InsecureEdgeTerminationPolicy "Allow") }}
@@ -572,8 +572,8 @@ backend {{genBackendNamePrefix $cfg.TLSTermination}}:{{$cfgIdx}}
         {{- range $idx, $endpoint := processEndpointsForAlias $cfg $serviceUnit (env "ROUTER_BACKEND_PROCESS_ENDPOINTS" "") }}
   server {{$endpoint.ID}} {{$endpoint.IP}}:{{$endpoint.Port}} cookie {{$endpoint.IdHash}} weight {{$weight}}
           {{- if (eq $cfg.TLSTermination "reencrypt") }} ssl
-	    {{- if not (isTrue $router_disable_http2) }} alpn h2,http/1.1
-	    {{- end }}
+        {{- if not (isTrue $router_disable_http2) }} alpn h2,http/1.1
+        {{- end }}
             {{- if $cfg.VerifyServiceHostname }} verifyhost {{ $serviceUnit.Hostname }}
             {{- end }}
             {{- if gt (len (index $cfg.Certificates (printf "%s_pod" $cfg.Host)).Contents) 0 }} verify required ca-file {{ $workingDir }}/router/cacerts/{{$cfgIdx}}.pem
@@ -636,7 +636,7 @@ backend {{genBackendNamePrefix $cfg.TLSTermination}}:{{$cfgIdx}}
       {{- if validateHAProxyWhiteList $ip_whiteList }}
   acl whitelist src {{$ip_whiteList}}
       {{- else }}
-	{{- with $whiteListFileName := generateHAProxyWhiteListFile $workingDir $cfgIdx $ip_whiteList}}
+    {{- with $whiteListFileName := generateHAProxyWhiteListFile $workingDir $cfgIdx $ip_whiteList}}
   acl whitelist src -f {{$whiteListFileName}}
         {{- end }}
       {{- end }}
@@ -700,8 +700,8 @@ backend {{genBackendNamePrefix $cfg.TLSTermination}}:{{$cfgIdx}}
 {{/*--------------------------------- END OF HAPROXY CONFIG, BELOW ARE MAPPING FILES ------------------------*/}}
 {{/*
     os_wildcard_domain.map: contains a mapping of wildcard hosts for a
-			[sub]domain regexps. This map is used to check if
-			a host matches a [sub]domain with has wildcard support.
+            [sub]domain regexps. This map is used to check if
+            a host matches a [sub]domain with has wildcard support.
 */}}
 {{ define "conf/os_wildcard_domain.map" -}}
 {{     if isTrue (env "ROUTER_ALLOW_WILDCARD_ROUTES") -}}
@@ -763,7 +763,7 @@ backend {{genBackendNamePrefix $cfg.TLSTermination}}:{{$cfgIdx}}
 
 {{/*
     os_sni_passthrough.map: contains a mapping of routes that expect to have an sni header and should be passed
-    					through to the host_be.  Driven by the termination type of the ServiceAliasConfigs
+                        through to the host_be.  Driven by the termination type of the ServiceAliasConfigs
 */}}
 {{ define "conf/os_sni_passthrough.map" -}}
 {{     range $idx, $line := generateHAProxyMap . -}}
